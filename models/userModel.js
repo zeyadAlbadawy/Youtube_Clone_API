@@ -73,6 +73,7 @@ module.exports = (sequelize, DataTypes) => {
     User.hasMany(models.Video, {
       onDelete: 'CASCADE',
     });
+    User.hasMany(models.Like, { onDelete: 'CASCADE' });
   };
 
   // HOCKS

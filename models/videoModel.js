@@ -17,20 +17,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
-    views: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    likes: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
   });
 
   // One Video Belongs to ONE users
-  // Video HAS a field Called "userId" => foreign key which links to user (id)
+  // 1) Video HAS a field Called "userId" => foreign key which links to user (id)
+  // 2) Video HAS MANY LIKES
   Video.associate = (models) => {
     Video.belongsTo(models.User);
+    Video.hasMany(models.Like, { onDelete: 'CASCADE' });
   };
+
+  // Video Has Many likes
   return Video;
 };

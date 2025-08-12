@@ -3,6 +3,7 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const userRouter = require('./routes/userRouter');
 const videoRouter = require('./routes/videoRouter.js');
+const likeRouter = require('./routes/likeRouter.js');
 const app = express();
 const AppError = require('./utils/appError.js');
 const globalErrorHandler = require('./controllers/errorController.js');
@@ -20,6 +21,7 @@ app.use((req, res, next) => {
 // Routers Middleware
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/videos', videoRouter);
+app.use('/api/v1/likes', likeRouter);
 
 app.all('/{*any}', (req, res, next) => {
   // If i pass anything to next it will propagate it to global error handling middleware

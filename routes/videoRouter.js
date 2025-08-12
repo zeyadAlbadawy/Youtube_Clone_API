@@ -8,7 +8,6 @@ videoRouter
   .route('/get-user-videos')
   .get(authMiddleware.protectTokenUser, videoController.getUserVideos);
 
-videoRouter.route('/:id').get(videoController.getOneVideo);
 // ONLY authenticated users can view all videos
 videoRouter
   .route('/get-all-videos')
@@ -22,5 +21,6 @@ videoRouter
     videoController.multerSetDestination,
     videoController.uploadVideo
   );
+videoRouter.route('/:videoId').get(videoController.getOneVideo);
 
 module.exports = videoRouter;
