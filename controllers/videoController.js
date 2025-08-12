@@ -96,7 +96,7 @@ const getAllVideos = async (req, res, next) => {
 const getOneVideo = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const video = await Video.findByPk(id);
+    const video = await Video.findByPk({ where: { UserId: req.params.id } });
     res.status(200).json({
       status: 'Sucess',
       data: { video },
