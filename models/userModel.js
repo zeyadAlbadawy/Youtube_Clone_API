@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
+const { FOREIGNKEYS } = require('sequelize/lib/query-types');
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
@@ -66,6 +67,15 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  // RELATIONS
+  // 1- One User has many videos and one video belongs to many users
+  User.associate = (models) => {
+    User.hasMany(models.Video, {
+      onDelete: 'CASCADE',
+    });
+  };
+
+  // HOCKS
   User.beforeCreate(async (user, options) => {
     user.password = await bcrypt.hash(user.password, 10);
     // user.passwordConfirm = await bcrypt.hash(user.passwordConfirm, 10);

@@ -27,5 +27,10 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
+  // One Video Belongs to ONE users
+  // Video HAS a field Called "userId" => foreign key which links to user (id)
+  Video.associate = (models) => {
+    Video.belongsTo(models.User);
+  };
   return Video;
 };

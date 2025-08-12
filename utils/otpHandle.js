@@ -1,3 +1,6 @@
+const { User } = require('../models');
+const sendMailOTP = require('../utils/sendMail.js');
+
 const createSendOtp = async (email) => {
   try {
     // 1 ) Check if  a user exists with this email

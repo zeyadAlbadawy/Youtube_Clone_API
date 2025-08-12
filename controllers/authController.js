@@ -184,9 +184,14 @@ const createUser = async (req, res, next) => {
 
     // get The data from the body
     await User.create(req.body);
-    res.status(201).json({
+    await otpHandler.createSendOtp(req.body.email);
+    res.status(200).json({
       status: 'Success',
-      message: 'User created Succesfully ',
+      message: {
+        userStats: 'User created Succesfully',
+        otpStats:
+          'OTP SENT TO MAIL TRY / POST / AT validate - otp with your mail and otp sent',
+      },
     });
   } catch (err) {
     next(err);
