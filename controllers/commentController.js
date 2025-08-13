@@ -83,4 +83,34 @@ const getUserComments = async (req, res, next) => {
   }
 };
 
-module.exports = { getVideoCommets, createComment, getUserComments };
+// Only the user who create the comment can delete it
+// 1) the user must be authenticated
+// 2) compare the id of authenticated user with the id of the user
+const deleteComment = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { commentId } = req.params;
+    const delComment = await Comment.findOne({
+      where: { UserId: userId, id: commentId },
+    });
+    if (!delComment)
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Comment not found or you do not have permission to delete it',
+      });
+    await delComment.destroy();
+    res.status(204).json({
+      status: 'Success',
+      message: 'Comment deleted Successfully!',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getVideoCommets,
+  createComment,
+  getUserComments,
+  deleteComment,
+};

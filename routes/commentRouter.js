@@ -6,6 +6,10 @@ const commentRouter = express.Router();
 commentRouter
   .route('/user-comments')
   .get(authMiddleware.protectTokenUser, commentController.getUserComments);
+
+commentRouter
+  .route('/delete-comment/:commentId')
+  .delete(authMiddleware.protectTokenUser, commentController.deleteComment);
 commentRouter
   .route('/comments-video/:videoId')
   .get(authMiddleware.protectTokenUser, commentController.getVideoCommets);
