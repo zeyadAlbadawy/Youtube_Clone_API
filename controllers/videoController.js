@@ -1,7 +1,7 @@
 const multer = require('multer');
 const AppError = require('../utils/appError');
 const path = require('path');
-const { Video } = require('../models');
+const { Video, User, Like } = require('../models');
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
 
 const multerStorageMixed = multer.diskStorage({
@@ -108,12 +108,16 @@ const getOneVideo = async (req, res, next) => {
 // NEED TO BE IMPLEMENTED AFTER
 const getUserVideos = async (req, res, next) => {
   try {
-    const userVideos = await Video.findAll(
-      { where: { UserId: req.user.id } },
-      {
-        include: [{ model: 'Video', as: 'videos' }],
-      }
-    );
+    const userVideos = await Video.findAll({
+      where: { UserId: req.user.id },
+
+      include: [
+        {
+          model: User,
+          attributes: ['firstName', 'email'],
+        },
+      ],
+    });
 
     if (!userVideos)
       return next(

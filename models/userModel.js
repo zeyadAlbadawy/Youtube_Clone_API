@@ -1,6 +1,5 @@
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
-const { FOREIGNKEYS } = require('sequelize/lib/query-types');
 
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
