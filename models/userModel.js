@@ -73,6 +73,7 @@ module.exports = (sequelize, DataTypes) => {
       onDelete: 'CASCADE',
     });
     User.hasMany(models.Like, { onDelete: 'CASCADE' });
+    User.hasMany(models.Comment, { onDelete: 'CASCADE' });
   };
 
   // HOCKS

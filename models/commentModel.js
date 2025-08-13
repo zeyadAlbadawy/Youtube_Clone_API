@@ -13,5 +13,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
   });
+
+  Comment.associate = (models) => {
+    Comment.belongsTo(models.Video, { onDelete: 'CASCADE' });
+    Comment.belongsTo(models.User, { onDelete: 'CASCADE' });
+  };
   return Comment;
 };
