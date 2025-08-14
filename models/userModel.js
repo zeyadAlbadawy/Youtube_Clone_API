@@ -68,13 +68,21 @@ module.exports = (sequelize, DataTypes) => {
 
   // RELATIONS
   // 1- One User has many videos and one video belongs to many users
+
   User.associate = (models) => {
+    User.belongsToMany(models.Channel, {
+      through: models.ChannelSubscribe,
+      foreignKey: 'UserId',
+      as: 'SubscribedChannels',
+    });
+
     User.hasMany(models.Video, {
       onDelete: 'CASCADE',
     });
     User.hasMany(models.Like, { onDelete: 'CASCADE' });
     User.hasMany(models.Dislike, { onDelete: 'CASCADE' });
     User.hasMany(models.Comment, { onDelete: 'CASCADE' });
+    User.hasMany(models.Channel, { onDelete: 'CASCADE' });
   };
 
   // HOCKS

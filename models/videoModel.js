@@ -39,6 +39,9 @@ module.exports = (sequelize, DataTypes) => {
   // 2) Video HAS MANY LIKES
   Video.associate = (models) => {
     Video.belongsTo(models.User);
+    Video.belongsTo(models.Channel, {
+      onDelete: 'CASCADE',
+    });
     Video.hasMany(models.Like, { onDelete: 'CASCADE' });
     Video.hasMany(models.Dislike, { onDelete: 'CASCADE' });
     Video.hasMany(models.Comment, { onDelete: 'CASCADE' });

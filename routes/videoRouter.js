@@ -18,11 +18,15 @@ videoRouter
 
 // Only autherticated users can upload video
 videoRouter
-  .route('/upload-video')
+  .route('/upload-video/:channelId')
   .post(
     authMiddleware.protectTokenUser,
     videoController.multerSetDestination,
     videoController.uploadVideo
   );
+
+videoRouter
+  .route('/delete-video/:videoId')
+  .delete(authMiddleware.protectTokenUser, videoController.deleteVideo);
 videoRouter.route('/:videoId').get(videoController.getOneVideo);
 module.exports = videoRouter;

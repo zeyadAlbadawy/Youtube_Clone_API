@@ -1,7 +1,7 @@
 const multer = require('multer');
 const AppError = require('../utils/appError');
 const path = require('path');
-const { Video, User, Like } = require('../models');
+const { Video, User, Like, Channel } = require('../models');
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
 
 const multerStorageMixed = multer.diskStorage({
@@ -44,17 +44,32 @@ const multerSetDestination = multer({
 ]);
 
 // Controller
+
+// Expects a channelId which is the id for the channel it will be uploaded for
 const uploadVideo = async (req, res, next) => {
   try {
+    // Need To check if this channel belongs to this user
+    // if so add the channelId to that ?
+    const { channelId } = req.params;
     if (!req.files || !req.files.video)
       return next(new AppError(`Please Upload The video`, 400));
 
+    // The id of the channel is for the user who create it
+    const channelBelongs = await Channel.findOne({
+      where: { id: channelId, UserId: req.user.id },
+    });
+
+    if (!channelBelongs)
+      return res.status(400).json({
+        status: 'fail',
+        message:
+          'This channel does not exist or this user does not have permissions for it',
+      });
     const newVideo = {
       title: req.body.title,
       videoUrl: `videos/${req.files.video[0].filename}`,
       UserId: req.user.id, // from auth middleware
     };
-
     // Check for thumbnail existence
     if (req.files.image && req.files.image[0])
       newVideo.thumbnailUrl = `imgs/${req.files.image[0].filename}`;
@@ -62,10 +77,14 @@ const uploadVideo = async (req, res, next) => {
     if (req.body.description) newVideo.description = req.body.description;
     // Create The Video
     const finalVideoCreated = await Video.create(newVideo);
+
     if (!finalVideoCreated)
       return next(
         new AppError(`There is an Error while uploading the video `, 400)
       );
+    // Link  the video with the channel
+    finalVideoCreated.ChannelId = channelId;
+    finalVideoCreated.save();
     res.status(201).json({
       status: 'Success',
       data: { finalVideoCreated },
@@ -74,6 +93,7 @@ const uploadVideo = async (req, res, next) => {
     next(err);
   }
 };
+
 const getAllVideos = async (req, res, next) => {
   try {
     const videos = await Video.findAll();
@@ -95,7 +115,15 @@ const getAllVideos = async (req, res, next) => {
 
 const getOneVideo = async (req, res, next) => {
   try {
-    const video = await Video.findByPk(req.params.videoId);
+    const video = await Video.findOne({
+      where: { id: req.params.videoId },
+      include: [
+        {
+          model: Channel,
+          attributes: ['name'],
+        },
+      ],
+    });
     video.views += 1;
     video.save();
     res.status(200).json({
@@ -117,6 +145,10 @@ const getUserVideos = async (req, res, next) => {
         {
           model: User,
           attributes: ['firstName', 'email'],
+        },
+        {
+          model: Channel,
+          attributes: ['name'],
         },
       ],
     });
@@ -141,10 +173,28 @@ const getUserVideos = async (req, res, next) => {
 
 // Any authenticated user can view the trending one
 const getVideoTrending = async (req, res, next) => {
-  const reqSorted = ['likes', 'views'];
-  const { sort } = req.query;
-  console.log(sort);
   try {
+    const reqSorted = ['likes', 'views'];
+    const { sort } = req.query; // likes OR views
+    if (!reqSorted.includes(sort))
+      return res.status(400).json({
+        status: 'fail',
+        message: 'invalid, the sort must by by likes OR views',
+      });
+    let videos;
+    // Apply sorting depends on what you need
+    if (sort === 'likes')
+      videos = await Video.findAll({
+        order: [['likes', 'DESC']],
+      });
+    else if (sort === 'views')
+      videos = await Video.findAll({
+        order: [['views', 'DESC']],
+      });
+    res.status(200).json({
+      status: 'success',
+      data: { videos },
+    });
   } catch (err) {
     next(err);
   }
@@ -154,12 +204,33 @@ const getVideoTrending = async (req, res, next) => {
 
 const deleteVideo = async (req, res, next) => {
   try {
+    const { videoId } = req.params;
+    const userId = req.user.id;
+    const foundedVideo = await Video.findOne({
+      where: {
+        UserId: userId,
+        id: videoId,
+      },
+    });
+    console.log(foundedVideo);
+    // If there is no video with this id OR the video does not belong to this user
+    if (!foundedVideo)
+      return res.status(404).json({
+        status: 'fail',
+        message: 'Video not found or you do not have permission to delete it',
+      });
+    await foundedVideo.destroy();
+    res.status(204).json({
+      status: 'success',
+      message: 'video deleted Successfully',
+    });
   } catch (err) {
     next(err);
   }
 };
 module.exports = {
   getAllVideos,
+  deleteVideo,
   getVideoTrending,
   uploadVideo,
   getUserVideos,
