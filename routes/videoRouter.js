@@ -5,6 +5,9 @@ const authController = require('../controllers/authController.js');
 const authMiddleware = require('../middlewares/authMiddleware.js');
 
 videoRouter
+  .route('/trending-videos')
+  .get(authMiddleware.protectTokenUser, videoController.getVideoTrending);
+videoRouter
   .route('/get-user-videos')
   .get(authMiddleware.protectTokenUser, videoController.getUserVideos);
 
@@ -22,5 +25,4 @@ videoRouter
     videoController.uploadVideo
   );
 videoRouter.route('/:videoId').get(videoController.getOneVideo);
-
 module.exports = videoRouter;

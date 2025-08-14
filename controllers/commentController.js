@@ -108,7 +108,33 @@ const deleteComment = async (req, res, next) => {
   }
 };
 
+const getAllComments = async (req, res, next) => {
+  try {
+    const comments = await Comment.findAll({
+      include: [
+        {
+          model: Video,
+          attributes: ['id', 'videoUrl'],
+        },
+        {
+          model: User,
+          attributes: ['id', 'firstName', 'email'],
+        },
+      ],
+    });
+    res.status(200).json({
+      status: 'Success',
+      message: {
+        date: comments,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
+  getAllComments,
   getVideoCommets,
   createComment,
   getUserComments,

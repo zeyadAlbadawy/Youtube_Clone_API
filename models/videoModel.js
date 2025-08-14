@@ -17,6 +17,21 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    views: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    likes: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    dislikes: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
   });
 
   // One Video Belongs to ONE users
@@ -25,6 +40,7 @@ module.exports = (sequelize, DataTypes) => {
   Video.associate = (models) => {
     Video.belongsTo(models.User);
     Video.hasMany(models.Like, { onDelete: 'CASCADE' });
+    Video.hasMany(models.Dislike, { onDelete: 'CASCADE' });
     Video.hasMany(models.Comment, { onDelete: 'CASCADE' });
   };
 

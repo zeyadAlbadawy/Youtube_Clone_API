@@ -1,4 +1,4 @@
-const { Like, Video, User } = require('../models');
+const { Like, Dislike, Video, User } = require('../models');
 const AppError = require('../utils/appError');
 
 // Logged IN user can like video
@@ -6,6 +6,21 @@ const likeVideo = async (req, res, next) => {
   try {
     const { videoId } = req.params;
     const userId = req.user.id;
+
+    // Check if there is any dislike remove it
+    const existingDisLike = await Dislike.findOne({
+      where: { UserId: userId, VideoId: videoId },
+    });
+
+    if (existingDisLike) {
+      const video = await Video.findByPk(videoId, { attributes: ['dislikes'] });
+      if (video.dislikes > 0) {
+        await Video.increment('dislikes', { by: -1, where: { id: videoId } });
+      }
+      await existingDisLike.destroy();
+    }
+
+    // Then apply the likes if there is no like!
     const [like, created] = await Like.findOrCreate({
       where: { UserId: userId, VideoId: videoId },
     });
@@ -15,6 +30,7 @@ const likeVideo = async (req, res, next) => {
         msg: 'You already liked this video!',
       });
 
+    await Video.increment('likes', { by: 1, where: { id: videoId } });
     res.status(201).json({
       status: 'Success',
       msg: 'Liked Succesfully',
@@ -30,18 +46,37 @@ const dislikeVideo = async (req, res, next) => {
   try {
     const { videoId } = req.params;
     const userId = req.user.id;
-    const foundedLike = await Like.findOne({
+
+    // If user has liked the video → remove the like first
+    const existingLike = await Like.findOne({
       where: { UserId: userId, VideoId: videoId },
     });
-    if (!foundedLike)
-      res.status(400).json({
+    if (existingLike) {
+      const video = await Video.findByPk(videoId, { attributes: ['likes'] });
+      if (video.likes > 0) {
+        await Video.increment('likes', { by: -1, where: { id: videoId } });
+      }
+      await existingLike.destroy();
+    }
+
+    // If already disliked → reject
+    const existingDislike = await Dislike.findOne({
+      where: { UserId: userId, VideoId: videoId },
+    });
+    if (existingDislike) {
+      return res.status(400).json({
         status: 'Fail',
-        message: `please like the video to be able to unlike it`,
+        message: `You already disliked this video`,
       });
-    await foundedLike.destroy();
+    }
+
+    // Add new dislike
+    await Dislike.create({ UserId: userId, VideoId: videoId });
+    await Video.increment('dislikes', { by: 1, where: { id: videoId } });
+
     res.status(201).json({
-      status: 'Sucess',
-      message: 'You unliked the video successfully',
+      status: 'Success',
+      message: 'Disliked successfully',
     });
   } catch (err) {
     next(err);

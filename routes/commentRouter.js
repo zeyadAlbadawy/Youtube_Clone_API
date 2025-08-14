@@ -4,6 +4,13 @@ const authMiddleware = require('../middlewares/authMiddleware.js');
 const commentRouter = express.Router();
 
 commentRouter
+  .route('/all-comments')
+  .get(
+    authMiddleware.protectTokenUser,
+    authMiddleware.checkAdmin,
+    commentController.getAllComments
+  );
+commentRouter
   .route('/user-comments')
   .get(authMiddleware.protectTokenUser, commentController.getUserComments);
 

@@ -96,6 +96,8 @@ const getAllVideos = async (req, res, next) => {
 const getOneVideo = async (req, res, next) => {
   try {
     const video = await Video.findByPk(req.params.videoId);
+    video.views += 1;
+    video.save();
     res.status(200).json({
       status: 'Sucess',
       data: { video },
@@ -128,6 +130,7 @@ const getUserVideos = async (req, res, next) => {
       );
     res.status(200).json({
       status: 'Success',
+      length: userVideos.length,
       data: { userVideos },
     });
     console.log(req.user.id);
@@ -136,8 +139,28 @@ const getUserVideos = async (req, res, next) => {
   }
 };
 
+// Any authenticated user can view the trending one
+const getVideoTrending = async (req, res, next) => {
+  const reqSorted = ['likes', 'views'];
+  const { sort } = req.query;
+  console.log(sort);
+  try {
+  } catch (err) {
+    next(err);
+  }
+};
+// Authenticated user can delete the video
+// The video must belongs to him!
+
+const deleteVideo = async (req, res, next) => {
+  try {
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   getAllVideos,
+  getVideoTrending,
   uploadVideo,
   getUserVideos,
   getOneVideo,
