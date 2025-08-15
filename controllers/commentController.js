@@ -88,18 +88,31 @@ const getUserComments = async (req, res, next) => {
 // 2) compare the id of authenticated user with the id of the user
 const deleteComment = async (req, res, next) => {
   try {
+    // The comment can be deleted by the user who create it
     const userId = req.user.id;
     const { commentId } = req.params;
     const delComment = await Comment.findOne({
-      where: { UserId: userId, id: commentId },
+      where: { id: commentId },
+      include: [{ model: Video, attributes: ['id', 'UserId', 'title'] }],
     });
+
     if (!delComment)
       return res.status(404).json({
         status: 'fail',
-        message: 'Comment not found or you do not have permission to delete it',
+        message: 'Comment not found',
       });
+
+    const isCommentAuthor = userId === delComment.UserId;
+    const isVideoAuthor = userId === delComment.Video.UserId; // paginate until reach
+
+    if (!isCommentAuthor && !isVideoAuthor)
+      return res.status(403).json({
+        status: 'fail',
+        message: 'You do not have permission to delete this comment',
+      });
+
     await delComment.destroy();
-    res.status(204).json({
+    res.status(200).json({
       status: 'Success',
       message: 'Comment deleted Successfully!',
     });
