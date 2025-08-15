@@ -24,6 +24,9 @@ const subscribeToChannel = async (req, res, next) => {
       UserId: req.user.id,
       ChannelId: channelId,
     });
+    foundChannel.subscribersCount += 1;
+    await foundChannel.save();
+
     res.status(201).json({
       status: 'Success',
       message: 'You subscribed to this channel',
@@ -48,6 +51,9 @@ const unSubscribeToChannel = async (req, res, next) => {
     });
 
     if (foundSubscription) {
+      foundChannel.subscribersCount -= 1;
+      await foundChannel.save();
+
       await foundSubscription.destroy();
       return res.status(200).json({
         status: 'Success',

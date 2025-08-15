@@ -46,6 +46,7 @@ const multerSetDestination = multer({
 // Controller
 
 // Expects a channelId which is the id for the channel it will be uploaded for
+// The User who created this channel only able to upload to it
 const uploadVideo = async (req, res, next) => {
   try {
     // Need To check if this channel belongs to this user
@@ -96,7 +97,14 @@ const uploadVideo = async (req, res, next) => {
 
 const getAllVideos = async (req, res, next) => {
   try {
-    const videos = await Video.findAll();
+    const videos = await Video.findAll({
+      include: [
+        {
+          model: Channel,
+          attributes: ['name'],
+        },
+      ],
+    });
     if (!videos)
       return next(
         new AppError(

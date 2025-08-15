@@ -6,6 +6,9 @@ const ChannelSubscribe = require('../controllers/channelSubscriber.js');
 // const
 
 channelRouter
+  .route('/all-channels')
+  .get(channelController.allAvailableChannels);
+channelRouter
   .route('/subscribe/:channelId')
   .post(authMiddleware.protectTokenUser, ChannelSubscribe.subscribeToChannel);
 
@@ -19,5 +22,9 @@ channelRouter
 
 channelRouter
   .route('/create-channel')
-  .post(authMiddleware.protectTokenUser, channelController.createChannel);
+  .post(
+    authMiddleware.protectTokenUser,
+    channelController.uploadChannelMedia,
+    channelController.createChannel
+  );
 module.exports = channelRouter;
