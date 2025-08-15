@@ -5,6 +5,9 @@ const authController = require('../controllers/authController.js');
 const authMiddleware = require('../middlewares/authMiddleware.js');
 
 videoRouter
+  .route('/searched-videos')
+  .get(authMiddleware.protectTokenUser, videoController.searchVideoByTitle);
+videoRouter
   .route('/trending-videos')
   .get(authMiddleware.protectTokenUser, videoController.getVideoTrending);
 videoRouter

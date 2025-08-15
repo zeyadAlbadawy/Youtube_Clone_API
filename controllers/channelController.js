@@ -1,7 +1,9 @@
 const { Channel, Video } = require('../models');
 const multer = require('multer');
 const path = require('path');
+const { Op } = require('sequelize');
 const AppError = require('../utils/appError');
+const searchFunc = require('../utils/search.js');
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
 
 // Upload The channel thumbnails
@@ -55,10 +57,9 @@ const createChannel = async (req, res, next) => {
       where: { name: channel.name, UserId: req.user.id },
     });
     if (existingChannel)
-      return res.status(400).json({
-        status: 'fail',
-        message: 'there is a channel with the provided credintials',
-      });
+      return next(
+        new AppError(`there is a channel with the provided credintials`, 404)
+      );
 
     const createdChannel = await Channel.create(channel);
     createdChannel.UserId = req.user.id;
@@ -80,11 +81,12 @@ const allChannelVideos = async (req, res, next) => {
     const channelFound = await Channel.findByPk(channelId);
 
     if (!channelFound)
-      return res.status(400).json({
-        status: 'Fail',
-        message:
-          'The Channel Id Does not exist or there is something went wrong while retriving the videos',
-      });
+      return next(
+        new AppError(
+          `The Channel Id Does not exist or there is something went wrong while retriving the videos`,
+          400
+        )
+      );
 
     const videos = await Video.findAll({ where: { ChannelId: channelId } });
 
@@ -109,9 +111,19 @@ const allAvailableChannels = async (req, res, next) => {
     next(err);
   }
 };
+
+const searchChannelByName = async (req, res, next) => {
+  try {
+    const value = req.query.name;
+    await searchFunc.searchedRes(req, res, next, Channel, 'name', value);
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   allAvailableChannels,
   uploadChannelMedia,
+  searchChannelByName,
   createChannel,
   allChannelVideos,
 };

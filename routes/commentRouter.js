@@ -15,6 +15,9 @@ commentRouter
   .get(authMiddleware.protectTokenUser, commentController.getUserComments);
 
 commentRouter
+  .route('/update-comment/:commentId')
+  .patch(authMiddleware.protectTokenUser, commentController.updateComment);
+commentRouter
   .route('/delete-comment/:commentId')
   .delete(authMiddleware.protectTokenUser, commentController.deleteComment);
 commentRouter

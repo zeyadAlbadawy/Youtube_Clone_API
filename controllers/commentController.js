@@ -1,4 +1,5 @@
 const { Comment, User, Like, Video } = require('../models');
+const AppError = require('../utils/appError');
 
 const createComment = async (req, res, next) => {
   try {
@@ -146,8 +147,35 @@ const getAllComments = async (req, res, next) => {
   }
 };
 
+// Author Of the comment only the allowed one to update the comment!
+const updateComment = async (req, res, next) => {
+  try {
+    const { commentId } = req.params;
+    const { content } = req.body;
+    const updatedComment = await Comment.update(
+      { content },
+      { where: { id: commentId }, returning: true }
+    );
+
+    const commentAuthor = updatedComment[1][0].UserId;
+    console.log(commentAuthor);
+    if (commentAuthor !== req.user.id)
+      return next(
+        new AppError(`you don't have permission to perform this action`, 403)
+      );
+
+    res.status(200).json({
+      status: 'Success',
+      message: 'comment updated successfully',
+      data: updatedComment[1],
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
   getAllComments,
+  updateComment,
   getVideoCommets,
   createComment,
   getUserComments,

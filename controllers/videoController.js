@@ -2,6 +2,9 @@ const multer = require('multer');
 const AppError = require('../utils/appError');
 const path = require('path');
 const { Video, User, Like, Channel } = require('../models');
+const searchFunc = require('../utils/search.js');
+const { Op } = require('sequelize');
+
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
 
 const multerStorageMixed = multer.diskStorage({
@@ -61,11 +64,13 @@ const uploadVideo = async (req, res, next) => {
     });
 
     if (!channelBelongs)
-      return res.status(400).json({
-        status: 'fail',
-        message:
+      return next(
+        new AppError(
           'This channel does not exist or this user does not have permissions for it',
-      });
+          400
+        )
+      );
+
     const newVideo = {
       title: req.body.title,
       videoUrl: `videos/${req.files.video[0].filename}`,
@@ -185,10 +190,10 @@ const getVideoTrending = async (req, res, next) => {
     const reqSorted = ['likes', 'views'];
     const { sort } = req.query; // likes OR views
     if (!reqSorted.includes(sort))
-      return res.status(400).json({
-        status: 'fail',
-        message: 'invalid, the sort must by by likes OR views',
-      });
+      return next(
+        new AppError(`invalid, the sort must by by likes OR views`, 400)
+      );
+
     let videos;
     // Apply sorting depends on what you need
     if (sort === 'likes')
@@ -223,10 +228,13 @@ const deleteVideo = async (req, res, next) => {
     console.log(foundedVideo);
     // If there is no video with this id OR the video does not belong to this user
     if (!foundedVideo)
-      return res.status(404).json({
-        status: 'fail',
-        message: 'Video not found or you do not have permission to delete it',
-      });
+      return next(
+        new AppError(
+          'Video not found or you do not have permission to delete it',
+          400
+        )
+      );
+
     await foundedVideo.destroy();
     res.status(204).json({
       status: 'success',
@@ -236,7 +244,17 @@ const deleteVideo = async (req, res, next) => {
     next(err);
   }
 };
+
+const searchVideoByTitle = async (req, res, next) => {
+  try {
+    const value = req.query.title;
+    await searchFunc.searchedRes(req, res, next, Video, 'title', value);
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
+  searchVideoByTitle,
   getAllVideos,
   deleteVideo,
   getVideoTrending,
