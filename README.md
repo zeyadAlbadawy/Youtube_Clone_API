@@ -5,15 +5,15 @@ Supports authentication, media uploads, subscriptions, comments, likes/dislikes,
 
 ---
 
-## 🚀 Features
+## Features
 
 ### 1. **User Management**
 
 - JWT-based authentication
 - Signup, login, and email verification via OTP
-- OTP sent via email, expires in 5 minutes
+- OTP sent via email, expires in 10 minutes
 - Unverified users cannot log in
-- Password reset via OTP
+- Password reset
 
 ### 2. **Video Management**
 
@@ -71,7 +71,7 @@ Supports authentication, media uploads, subscriptions, comments, likes/dislikes,
 
 ---
 
-## 📌 API Endpoints
+## API Endpoints
 
 ### **Auth / Users**
 
@@ -137,7 +137,7 @@ Supports authentication, media uploads, subscriptions, comments, likes/dislikes,
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - Node.js
 - Express.js
@@ -149,7 +149,7 @@ Supports authentication, media uploads, subscriptions, comments, likes/dislikes,
 
 ---
 
-## 📦 Installation
+## Installation
 
 ```bash
 git clone https://github.com/zeyadAlbadawy/Youtube_Clone_API.git
@@ -159,7 +159,7 @@ npm install
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 Create a `.env` file or use the provided `.env.example`.
 
@@ -181,7 +181,7 @@ EMAIL_PASS=yourpassword
 
 ---
 
-## ▶️ Run the Project
+## Run the Project
 
 ### Development
 
