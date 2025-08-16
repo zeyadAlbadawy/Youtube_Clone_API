@@ -5,8 +5,9 @@ const jwtCreation = require('../utils/jwtToken.js');
 const AppError = require('../utils/appError.js');
 const sendMailOTP = require('../utils/sendMail.js');
 const crypto = require('crypto');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const otpHandler = require('../utils/otpHandle.js');
+const { nextTick } = require('process');
 
 const validateOtp = async (req, res, next) => {
   try {
@@ -210,11 +211,146 @@ const getAllUsers = async (req, res, next) => {
   }
 };
 
+const forgetPassword = async (req, res, next) => {
+  let foundUser = undefined;
+  try {
+    // 1 ) GET the email of the user and check if it exists
+    // 2) create the password reset token and save it
+    // 3 ) create the reset URL  and send it via mail
+    // 4 )  remove password reset token from DB
+    // 1)
+    const email = req.body.email;
+    if (!email)
+      return next(
+        new AppError(`Please provide the email you forget its password`, 400)
+      );
+    foundUser = await User.findOne({ where: { email: req.body.email } });
+    if (!foundUser)
+      return next(
+        new AppError(`There is no user with this email ${req.body.email}`, 404)
+      );
+
+    // 2) RESET TOKEN
+    const token = await foundUser.generateRandomToken();
+    await foundUser.save(); // save the expiration for 10 min
+
+    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/resetPassword/${token}`;
+    const message = `Forgot your password, Submit A PATCH Request to this URL ${resetURL}.\n if you don't make this request, please ignore this message`;
+
+    await sendMailOTP.sendEmail({
+      email: req.body.email,
+      subject: `Forget Your Password ?`,
+      message,
+    });
+
+    res.status(200).json({
+      status: 'Success',
+      message: 'The Token has sent to the user mail!',
+    });
+  } catch (err) {
+    console.error('ForgetPassword Error:', err); // log the actual reason
+    if (foundUser) {
+      foundUser.passwordResetToken = undefined;
+      foundUser.passwordExpiredResetToken = undefined;
+      await foundUser.save({ validate: false }); // skip validations
+    }
+    next(new AppError('There was an error sending the token', 500));
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email, password, passwordConfirm } = req.body;
+    // 1) Hash the original token which sent via url
+    const encryptedToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+    // 2) check if there is a user with this token and provided mail in the DB and check if it is valid
+    const foundUser = await User.findOne({
+      where: {
+        email,
+        passwordResetToken: encryptedToken,
+        passwordExpiredResetToken: { [Op.gt]: new Date() },
+      },
+    });
+    if (!foundUser)
+      return next(
+        new AppError(
+          `the requested user not found or the token has been expired`,
+          404
+        )
+      );
+
+    if (!password || !passwordConfirm) {
+      return next(
+        new AppError('Please provide both password and passwordConfirm', 400)
+      );
+    }
+
+    foundUser.password = password;
+    foundUser.passwordConfirm = passwordConfirm;
+    foundUser.passwordExpiredResetToken = null;
+    foundUser.passwordResetToken = null;
+    await foundUser.save();
+
+    res.status(201).json({
+      status: 'Success',
+      message: 'Password Updated successfully!',
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Only authenticated users can update themselves
+
+const updateMe = async (req, res, next) => {
+  try {
+    const allowedFields = ['firstName', 'lastName', 'bio'];
+
+    const foundUser = await User.findByPk(req.user.id, {
+      attributes: {
+        exclude: [
+          'refreshedToken',
+          'otpExpires',
+          'otp',
+          'createdAt',
+          'updatedAt',
+          'passwordExpiredResetToken',
+          'passwordResetToken',
+        ],
+      },
+    });
+
+    if (!foundUser) {
+      return next(new AppError('User not found', 404));
+    }
+
+    const updatedInfo = {};
+    allowedFields.forEach((field) => {
+      if (req.body[field]) updatedInfo[field] = req.body[field];
+    });
+
+    await foundUser.update(updatedInfo);
+    res.status(201).json({
+      status: 'Success',
+      message: 'User Updated Successfully',
+      data: foundUser,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 module.exports = {
+  forgetPassword,
+  resetPassword,
   getAllUsers,
   createUser,
   login,
   logout,
   handleRefreshToken,
   validateOtp,
+  updateMe,
 };

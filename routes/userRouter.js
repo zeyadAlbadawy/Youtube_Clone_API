@@ -10,6 +10,11 @@ userRouter
     authController.getAllUsers
   );
 
+userRouter.post('/forgetPassword', authController.forgetPassword);
+userRouter.patch('/resetPassword/:token', authController.resetPassword);
+userRouter
+  .route('/update-me')
+  .patch(authMiddleware.protectTokenUser, authController.updateMe);
 userRouter.route('/validate-otp').post(authController.validateOtp);
 userRouter.route('/refresh').get(authController.handleRefreshToken);
 userRouter.route('/signup').post(authController.createUser);

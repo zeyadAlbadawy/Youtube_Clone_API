@@ -56,6 +56,18 @@ module.exports = (sequelize, DataTypes) => {
           }
         },
       },
+      passwordExpiredResetToken: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      passwordResetToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      bio: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       otp: DataTypes.STRING,
       otpExpires: DataTypes.DATE,
     },
@@ -91,6 +103,11 @@ module.exports = (sequelize, DataTypes) => {
     // user.passwordConfirm = await bcrypt.hash(user.passwordConfirm, 10);
   });
 
+  User.beforeSave(async (user, options) => {
+    if (user.changed('password'))
+      user.password = await bcrypt.hash(user.password, 10);
+  });
+
   // Remove password and passwordConfirm from the JSON format
   User.prototype.toJSON = function () {
     const values = Object.assign({}, this.get());
@@ -112,6 +129,21 @@ module.exports = (sequelize, DataTypes) => {
     await this.save({ validate: false });
     // Return the original otp which is not hashed!
     return otp;
+  };
+
+  // Password RESET
+  User.prototype.generateRandomToken = async function () {
+    // Create random token un hashed!
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    // Hash the created token and store it hashed in the database
+    this.passwordResetToken = crypto
+      .createHash('sha256')
+      .update(resetToken)
+      .digest('hex');
+
+    // This token is valid for 10 min
+    this.passwordExpiredResetToken = new Date(Date.now() + 10 * 60 * 1000);
+    return resetToken;
   };
 
   return User;
