@@ -166,17 +166,31 @@ Create a `.env` file or use the provided `.env.example`.
 Example:
 
 ```
-PORT=5000
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=yourpassword
-DB_NAME=youtube_clone
-JWT_SECRET=yourjwtsecret
-EMAIL_HOST=smtp.example.com
+# Database Configuration
+USER_NAME=your_postgres_user
+PASSWORD=your_postgres_password
+HOST_NAME=127.0.0.1
+PORT=5432
+DB_NAME=Youtube
+
+# Application
+APP_PORT=5000
+
+# JWT Configuration
+JWT_SECRET_KEY=your_jwt_secret_key
+JWT_EXPIRES_IN=30d
+REFRESH_EXPIRES_IN=60d
+
+# Email Configuration (Mailtrap or SMTP)
+EMAIL_HOST=smtp.mailtrap.io
 EMAIL_PORT=587
-EMAIL_USER=you@example.com
-EMAIL_PASS=yourpassword
+EMAIL_USER=your_email_user
+EMAIL_PASSWORD=your_email_password
+
+# File Upload Limits (in MB)
+VIDEO_FILE_SIZE=50
+IMAGE_FILE_SIZE=5
+
 ```
 
 ---
