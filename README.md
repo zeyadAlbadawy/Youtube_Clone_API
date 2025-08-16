@@ -4,7 +4,7 @@ A RESTful backend for a YouTube-style video sharing platform built with **Node.j
 Supports authentication, media uploads, subscriptions, comments, likes/dislikes, and trending logic.
 
 ---
-![Uploading Untitled (1).png…]()
+<img width="1591" height="1112" alt="Untitled (1)" src="https://github.com/user-attachments/assets/8ff03907-598e-4c48-b219-7622a282922f" />
 
 ## Features
 
