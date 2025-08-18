@@ -5,15 +5,7 @@ const { Op } = require('sequelize');
 const AppError = require('../utils/appError');
 const searchFunc = require('../utils/search.js');
 const uploadImgs = require('../utils/uploadChannelAvatar.js');
-const cloudinary = require('cloudinary').v2;
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
-
-// CLOUDINARY CONFIG
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET_KEY,
-});
 
 // Available image types
 const whitelist = ['image/png', 'image/jpeg', 'image/jpg'];
@@ -59,7 +51,7 @@ const createChannel = async (req, res, next) => {
     const channel = {
       name: req.body.name,
     };
-    console.log(req.files.avatarUrl[0].path);
+    // console.log(req.files.avatarUrl[0].path);
 
     if (req.body.description) channel.description = req.body.description;
     if (req.files.avatarUrl && req.files.avatarUrl[0])

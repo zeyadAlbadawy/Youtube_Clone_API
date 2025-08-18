@@ -10,6 +10,15 @@ const app = express();
 const AppError = require('./utils/appError.js');
 const globalErrorHandler = require('./controllers/errorController.js');
 const db = require('./models');
+const cloudinary = require('cloudinary').v2;
+
+// Cloudainary Configuration
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET_KEY,
+});
+
 // MIDDLEWARES
 app.use(express.json());
 app.use(cookieParser());

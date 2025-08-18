@@ -4,7 +4,7 @@ const path = require('path');
 const { Video, User, Like, Channel } = require('../models');
 const searchFunc = require('../utils/search.js');
 const { Op } = require('sequelize');
-
+const cloudinary = require('cloudinary').v2;
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
 
 const multerStorageMixed = multer.diskStorage({
@@ -21,14 +21,20 @@ const multerStorageMixed = multer.diskStorage({
     const ext = path.extname(file.originalname);
     const randomNum = randomGenerated();
     const timestamp = Date.now();
-    cb(null, `${randomNum}-${timestamp}${ext}`);//TODO 
+    cb(null, `${randomNum}-${timestamp}${ext}`); //TODO
   },
 });
 
 const multerFilterMixed = (req, file, cb) => {
+  console.log('File received:', {
+    fieldname: file.fieldname,
+    mimetype: file.mimetype,
+    originalname: file.originalname,
+  });
+
   if (file.fieldname === 'video' && file.mimetype.startsWith('video')) {
     cb(null, true);
-  } else if (file.fieldname === 'image' && file.mimetype.startsWith('image')) {
+  } else if (file.fieldname === 'image') {
     cb(null, true);
   } else {
     cb(new AppError(`Invalid file type for ${file.fieldname}`, 400), false);
@@ -91,6 +97,49 @@ const uploadVideo = async (req, res, next) => {
     // Link  the video with the channel
     finalVideoCreated.ChannelId = channelId;
     finalVideoCreated.save();
+
+    // Cloudainary Linking to upload Video, image
+
+    let videoUrlCloudainary, thumbnailUrlCloudainary;
+    // Upload The Video
+    console.log(req.files.video[0].path);
+    if (req.files.video && req.files.video[0]) {
+      const videoUpload = await cloudinary.uploader.upload(
+        req.files.video[0].path,
+        {
+          folder: 'youtube-clone/videos/Clips',
+          resource_type: 'video',
+          use_filename: true,
+          unique_filename: false,
+          resource_type: 'video',
+          chunk_size: 6000000,
+        }
+      );
+      videoUrlCloudainary = videoUpload.secure_url;
+      finalVideoCreated.videoUrl = videoUrlCloudainary;
+      await finalVideoCreated.save();
+    }
+
+    if (
+      req.files.image &&
+      req.files.image.length > 0 &&
+      req.files.image[0].path
+    ) {
+      const thumbnailUpload = await cloudinary.uploader.upload(
+        req.files.image[0].path,
+        {
+          folder: 'youtube-clone/videos/images',
+          resource_type: 'image',
+          use_filename: true,
+        }
+      );
+      thumbnailUrlCloudainary = thumbnailUpload.secure_url;
+      finalVideoCreated.thumbnailUrl = thumbnailUrlCloudainary;
+      await finalVideoCreated.save();
+    }
+
+    // Save the video
+
     res.status(201).json({
       status: 'Success',
       data: { finalVideoCreated },
@@ -225,7 +274,6 @@ const deleteVideo = async (req, res, next) => {
         id: videoId,
       },
     });
-    console.log(foundedVideo);
     // If there is no video with this id OR the video does not belong to this user
     if (!foundedVideo)
       return next(
