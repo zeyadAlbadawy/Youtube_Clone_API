@@ -1,4 +1,5 @@
 const { Channel, ChannelSubscribe } = require('../models');
+const AppError = require('../utils/appError');
 
 const subscribeToChannel = async (req, res, next) => {
   try {
@@ -69,4 +70,39 @@ const unSubscribeToChannel = async (req, res, next) => {
     next(err);
   }
 };
-module.exports = { subscribeToChannel, unSubscribeToChannel };
+
+// For one user, get w which chnanel is subsrcribed to
+const getUserSubscription = async (req, res, next) => {
+  try {
+    const channels = await ChannelSubscribe.findAll({
+      where: { UserId: req.user.id },
+      include: [
+        {
+          model: Channel,
+          attributes: ['name', 'subscribersCount'],
+        },
+      ],
+    });
+
+    if (!channels)
+      return next(
+        new AppError(
+          `OPS! Something went wrong while retriving subscriptions`,
+          404
+        )
+      );
+
+    res.status(200).json({
+      status: 'Success',
+      message: { data: channels },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = {
+  getUserSubscription,
+  subscribeToChannel,
+  unSubscribeToChannel,
+};

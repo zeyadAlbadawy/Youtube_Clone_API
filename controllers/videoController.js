@@ -21,7 +21,7 @@ const multerStorageMixed = multer.diskStorage({
     const ext = path.extname(file.originalname);
     const randomNum = randomGenerated();
     const timestamp = Date.now();
-    cb(null, `${randomNum}-${timestamp}${ext}`);
+    cb(null, `${randomNum}-${timestamp}${ext}`);//TODO 
   },
 });
 

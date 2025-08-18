@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
     'Like',
     {
       UserId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER,//TODO uuid
         allowNull: false,
       },
       VideoId: {

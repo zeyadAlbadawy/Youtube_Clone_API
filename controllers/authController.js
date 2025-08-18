@@ -1,5 +1,5 @@
 const express = require('express');
-const { User } = require('../models');
+const { User, ChannelSubscribe } = require('../models');
 const jwt = require('jsonwebtoken');
 const jwtCreation = require('../utils/jwtToken.js');
 const AppError = require('../utils/appError.js');
@@ -54,7 +54,7 @@ const handleRefreshToken = async (req, res, next) => {
     const cookies = req.cookies;
 
     if (!cookies?.refreshJWTtoken) {
-      return next(new AppError('Refresh token not found in cookies', 401));
+      return next(new AppError('Refresh token not found in cookies', 403));
     }
 
     const refreshToken = cookies.refreshJWTtoken;
@@ -343,6 +343,7 @@ const updateMe = async (req, res, next) => {
     next(err);
   }
 };
+
 module.exports = {
   forgetPassword,
   resetPassword,

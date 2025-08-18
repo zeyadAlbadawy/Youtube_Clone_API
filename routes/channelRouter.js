@@ -6,6 +6,10 @@ const ChannelSubscribe = require('../controllers/channelSubscriber.js');
 // const
 
 channelRouter
+  .route('/my-subscribers')
+  .get(authMiddleware.protectTokenUser, ChannelSubscribe.getUserSubscription);
+
+channelRouter
   .route('/search-channel')
   .get(authMiddleware.protectTokenUser, channelController.searchChannelByName);
 channelRouter

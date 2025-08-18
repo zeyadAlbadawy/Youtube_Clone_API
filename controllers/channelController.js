@@ -4,7 +4,19 @@ const path = require('path');
 const { Op } = require('sequelize');
 const AppError = require('../utils/appError');
 const searchFunc = require('../utils/search.js');
+const uploadImgs = require('../utils/uploadChannelAvatar.js');
+const cloudinary = require('cloudinary').v2;
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
+
+// CLOUDINARY CONFIG
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET_KEY,
+});
+
+// Available image types
+const whitelist = ['image/png', 'image/jpeg', 'image/jpg'];
 
 // Upload The channel thumbnails
 const multerStorage = multer.diskStorage({
@@ -20,10 +32,13 @@ const multerStorage = multer.diskStorage({
 });
 
 const multerFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image')) {
+  if (whitelist.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new AppError('Not an image! Please upload images only.'), false);
+    cb(
+      new AppError('Not a valid type image! Please upload images only.'),
+      false
+    );
   }
 };
 
@@ -31,6 +46,7 @@ const multerFilter = (req, file, cb) => {
 const upload = multer({
   storage: multerStorage,
   fileFilter: multerFilter,
+  limits: { fileSize: process.env.IMAGE_FILE_SIZE * 1024 * 1024 },
 });
 
 const uploadChannelMedia = upload.fields([
@@ -43,10 +59,9 @@ const createChannel = async (req, res, next) => {
     const channel = {
       name: req.body.name,
     };
-    console.log(req.files);
+    console.log(req.files.avatarUrl[0].path);
 
     if (req.body.description) channel.description = req.body.description;
-
     if (req.files.avatarUrl && req.files.avatarUrl[0])
       channel.avatarUrl = `channel/${req.files.avatarUrl[0].filename}`;
     if (req.files.bannerUrl && req.files.bannerUrl[0])
@@ -56,6 +71,7 @@ const createChannel = async (req, res, next) => {
     const existingChannel = await Channel.findOne({
       where: { name: channel.name, UserId: req.user.id },
     });
+
     if (existingChannel)
       return next(
         new AppError(`there is a channel with the provided credintials`, 404)
@@ -63,13 +79,17 @@ const createChannel = async (req, res, next) => {
 
     const createdChannel = await Channel.create(channel);
     createdChannel.UserId = req.user.id;
-    createdChannel.save();
+    await createdChannel.save();
+
+    // Upload Via Cloudainary
+    await uploadImgs.uploadThumnails(req, res, next, createdChannel);
 
     res.status(200).json({
       status: 'Success',
       message: `Channel with the name ${channel.name} create Successfully!`,
     });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };
