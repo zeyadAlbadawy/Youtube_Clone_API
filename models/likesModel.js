@@ -2,12 +2,21 @@ module.exports = (sequelize, DataTypes) => {
   const Like = sequelize.define(
     'Like',
     {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+
       UserId: {
-        type: DataTypes.INTEGER,//TODO uuid
+        type: DataTypes.UUID, //TODO uuid
+        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
       VideoId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+
         allowNull: false,
       },
     },

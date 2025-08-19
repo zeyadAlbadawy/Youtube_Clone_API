@@ -81,6 +81,7 @@ const uploadVideo = async (req, res, next) => {
       title: req.body.title,
       videoUrl: `videos/${req.files.video[0].filename}`,
       UserId: req.user.id, // from auth middleware
+      ChannelId: channelId,
     };
     // Check for thumbnail existence
     if (req.files.image && req.files.image[0])
@@ -95,8 +96,8 @@ const uploadVideo = async (req, res, next) => {
         new AppError(`There is an Error while uploading the video `, 400)
       );
     // Link  the video with the channel
-    finalVideoCreated.ChannelId = channelId;
-    finalVideoCreated.save();
+    // finalVideoCreated.ChannelId = channelId;
+    // finalVideoCreated.save();
 
     // Cloudainary Linking to upload Video, image
 

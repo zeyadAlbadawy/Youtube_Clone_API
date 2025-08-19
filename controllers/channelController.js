@@ -79,6 +79,7 @@ const createChannel = async (req, res, next) => {
     res.status(200).json({
       status: 'Success',
       message: `Channel with the name ${channel.name} create Successfully!`,
+      data: { createdChannel },
     });
   } catch (err) {
     console.log(err);

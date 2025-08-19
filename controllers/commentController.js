@@ -11,6 +11,7 @@ const createComment = async (req, res, next) => {
       VideoId: videoId,
       content,
     });
+
     if (!createdComment)
       return res.status(400).json({
         status: 'Fail',
@@ -41,6 +42,7 @@ const getVideoCommets = async (req, res, next) => {
           attributes: ['id', 'firstName', 'email'],
         },
       ],
+      attributes: ['id', 'content', 'UserId'],
       order: [['createdAt', 'DESC']],
     });
 

@@ -125,6 +125,7 @@ const getUserLikes = async (req, res, next) => {
           attributes: ['id', 'firstName', 'email'],
         },
       ],
+      attributes: ['id'],
     });
     res.status(200).json({
       status: 'Success',

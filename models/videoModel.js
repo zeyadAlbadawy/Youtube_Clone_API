@@ -1,6 +1,12 @@
 module.exports = (sequelize, DataTypes) => {
   const Video = sequelize.define('Video', {
     // Title, description, videoUrl, thumbnailUrl,  views, likes
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+
     title: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -30,6 +36,14 @@ module.exports = (sequelize, DataTypes) => {
     dislikes: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+      allowNull: false,
+    },
+    UserId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    ChannelId: {
+      type: DataTypes.UUID,
       allowNull: false,
     },
   });

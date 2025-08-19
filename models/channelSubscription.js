@@ -2,12 +2,20 @@ module.exports = (sequelize, DataTypes) => {
   const ChannelSubscribe = sequelize.define(
     'ChannelSubscribe',
     {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+
       UserId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
       ChannelId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
         allowNull: false,
       },
     },
