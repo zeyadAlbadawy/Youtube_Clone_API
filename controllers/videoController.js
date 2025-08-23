@@ -8,8 +8,8 @@ const uploadVideoImg = require('../utils/videoImageUpload.js');
 const cloudinary = require('cloudinary').v2;
 const randomGenerated = () => Math.floor(Math.random() * 100000) + 1;
 
-const whitelistForImg = ['image/png', 'image/jpeg', 'image/jpg'];
-const whiteListForVideo = ['video/mp4'];
+const whitelistForImg = ['image/png', 'image/jpeg', 'image/jpg']; // Allowed Image Format
+const whiteListForVideo = ['video/mp4']; // Allowed Video Format
 
 const multerStorageMixed = multer.diskStorage({
   destination: (req, file, cb) => {
