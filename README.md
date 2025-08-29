@@ -6,7 +6,6 @@ Supports authentication, media uploads, subscriptions, comments, likes/dislikes,
 ---
 <img width="1591" height="1112" alt="Untitled (1)" src="https://github.com/user-attachments/assets/8ff03907-598e-4c48-b219-7622a282922f" />
 
-<img width="1591" height="1112" alt="Untitled (1)" src="https://github.com/user-attachments/assets/8ff03907-598e-4c48-b219-7622a282922f" />
 
 ## Features
 
